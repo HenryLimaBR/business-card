@@ -1,91 +1,73 @@
+'use client'
+import { CardFormData, Form } from '@/components/Form'
+import axios from 'axios'
+import { useState } from 'react'
+import { Card } from '@prisma/client'
 import Image from 'next/image'
-import { Inter } from 'next/font/google'
-import styles from './page.module.css'
+import qrcode from 'qrcode'
+import { Loader2 } from 'lucide-react'
 
-const inter = Inter({ subsets: ['latin'] })
+export default function HomePage() {
+  const [url, setUrl] = useState<string | null>(null)
+  const [qrImage, setQrImage] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
 
-export default function Home() {
+  const generateUrl = async (card: CardFormData) => {
+    setUrl(null)
+    setQrImage(null)
+    setIsLoading(true)
+    const { data } = await axios.post<Card>('/api/card', card)
+    const url = `${window.location.protocol}//${window.location.host}/card/${data.id}`
+    setIsLoading(false)
+    setUrl(url)
+    setQrImage(await qrcode.toDataURL(url, { width: 256 }))
+  }
+
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
+    <div className='w-full min-h-screen bg-zinc-500'>
+      <main className='w-full flex justify-center items-center flex-col py-8 gap-8 lg:flex-row'>
+        <Form
+          onSubmit={generateUrl}
         />
-        <div className={styles.thirteen}>
-          <Image src="/thirteen.svg" alt="13" width={40} height={31} priority />
+
+        {
+          !!isLoading && (
+            <div className='px-48'>
+              <span className='text-zinc-100'>
+                <Loader2
+                  size={64}
+                  className='animate-spin'
+                />
+              </span>
+            </div>
+          )
+        }
+
+        <div className='bg-zinc-700 flex flex-col justify-center items-center rounded'>
+          {
+            !!qrImage && (
+              < Image
+                src={qrImage}
+                quality={100}
+                alt='QR-Code'
+                width={192}
+                height={192}
+                className='rounded mt-4'
+              />
+            )
+          }
+
+          {
+            !!url && (
+              <a href={url} className='text-zinc-200 underline text-sm p-4'>
+                <span>
+                  {url}
+                </span>
+              </a>
+            )
+          }
         </div>
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://beta.nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={inter.className}>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p className={inter.className}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={inter.className}>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p className={inter.className}>Explore the Next.js 13 playground.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={inter.className}>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p className={inter.className}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+      </main>
+    </div>
   )
 }
