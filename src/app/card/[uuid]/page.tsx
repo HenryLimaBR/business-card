@@ -26,21 +26,6 @@ async function getCard(uuid: string) {
   return card
 }
 
-const mock = {
-  id: '9c0e5242-6d7f-4bda-a387-bed8557d27b9',
-  name: 'Henry Lima',
-  about: "I'm a full-stack developer :)",
-  links: [
-    '{"name":"Github","url":"https://github.com/henrylimabr"}',
-    '{"name":"Linkedin","url":"https://linkedin.com/in/heurrysonlima"}',
-    '{"name":"Instagram","url":"https://instagram.com/henrylimabr"}',
-    '{"name":"Twitch","url":"https://twitch.tv/henrylimabr"}'
-  ],
-  views: 13,
-  createdAt: new Date('2023-03-17T18:27:37.696Z'),
-  updatedAt: new Date('2023-03-17T18:53:58.758Z')
-}
-
 export default async function CardPage({ params }: CardPageProps) {
   const { name, about, links, createdAt, views } = await getCard(params.uuid)
 
